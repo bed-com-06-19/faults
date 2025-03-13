@@ -1,12 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
-import 'pages/landing_page.dart';
 
-Future main() async {
+// Import pages
+import 'package:faults/features/app/splash_screen/splash_screen.dart';
+import 'package:faults/features/user_auth/presentation/pages/login_page.dart';
+
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase only once depending on the platform
+  // Initialize Firebase for different platforms
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -45,7 +49,11 @@ class FaultDetectionApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LandingPage(),
-    );
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(child: LoginPage()), // Splash Screen
+        '/login': (context) => const LoginPage(), // Login Page
+      }, // Close the routes map here
+    ); // Close the MaterialApp widget here
   }
 }
