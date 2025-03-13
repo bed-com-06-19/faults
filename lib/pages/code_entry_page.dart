@@ -5,6 +5,7 @@ class CodeEntryPage extends StatefulWidget {
   const CodeEntryPage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CodeEntryPageState createState() => _CodeEntryPageState();
 }
 

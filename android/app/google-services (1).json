@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "664103674812",
+    "project_id": "faults-2a6ef",
+    "storage_bucket": "faults-2a6ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664103674812:android:5526c3394a86b9df2e01b9",
+        "android_client_info": {
+          "package_name": "com.example.faults"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCF31R_wYaBYehh8eKcttUdYdmy744KGog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
