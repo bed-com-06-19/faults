@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'history_page.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -83,7 +85,7 @@ class HomePage extends StatelessWidget {
               icon: Icons.history,
               label: "History",
               onTap: () {
-                // TODO: Navigate to History Page
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage()));
               },
             ),
             // Settings Card Button
@@ -91,7 +93,7 @@ class HomePage extends StatelessWidget {
               icon: Icons.settings,
               label: "Settings",
               onTap: () {
-                // TODO: Navigate to Settings Page
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
               },
             ),
           ],
