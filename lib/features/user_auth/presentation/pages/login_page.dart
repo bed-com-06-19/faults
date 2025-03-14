@@ -112,10 +112,8 @@ class _LoginPageState extends State<LoginPage> {
 
             if (role == 'admin') {
               Navigator.pushNamed(context, '/admin');
-            } else if (role == 'Parent') {
-              Navigator.pushNamed(context, '/parent');
-            } else if (role == 'teacher') {
-              Navigator.pushNamed(context, '/teacherd');
+            }  else if (role == 'worker') {
+              Navigator.pushNamed(context, '/worker');
             } else {
               showToast(message: "Invalid user role");
             }
