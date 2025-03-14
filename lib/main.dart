@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:faults/features/app/splash_screen/splash_screen.dart';
 import 'package:faults/features/user_auth/presentation/pages/login_page.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -54,8 +53,8 @@ class FaultDetectionApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashScreen(child: LoginPage()), // Splash Screen
         '/login': (context) => const LoginPage(), // Login Page
-         '/admin': (context) => const AdminPage(),
-      }, // Close the routes map here
-    ); // Close the MaterialApp widget here
+        '/admin': (context) => const AdminPage(), // Admin Page
+      },
+    );
   }
 }

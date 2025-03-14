@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({super.key});
+class NavBar extends StatefulWidget {
+  const NavBar({super.key});
 
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  State<NavBar> createState() => _NavBarState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _NavBarState extends State<NavBar> {
   int _selectedIndex = 0; // Tracks the selected index for the navbar
 
   // List of pages to navigate to
-  // Remove `const` here because these pages are not const constructors
+  // Remove the `const` from here, since the pages are not const constructors
   static final List<Widget> _pages = <Widget>[
     HomePage(),
     FaultsPage(),
@@ -29,22 +29,20 @@ class _AdminPageState extends State<AdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
+      // Display the selected page
       body: SafeArea(
-        child: _pages[_selectedIndex], // Display the selected page
+        child: _pages[_selectedIndex],
       ),
+
+      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Current selected index
         onTap: _onItemTapped, // Callback when an item is tapped
         type: BottomNavigationBarType.fixed, // Fixed style for more than 3 items
-        selectedItemColor: const Color.fromARGB(255, 117, 49, 9), // Color for the selected item
+        selectedItemColor: Colors.blueAccent, // Color for the selected item
         unselectedItemColor: Colors.grey, // Color for unselected items
-        backgroundColor: Colors.white,
-        elevation: 10, // Adds shadow to the bottom navigation bar
+        backgroundColor: Colors.white, // White background color for bottom navbar
+        elevation: 8, // Add shadow to the bottom navigation bar for a floating effect
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
