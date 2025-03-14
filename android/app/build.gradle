@@ -3,13 +3,13 @@ plugins {
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services"
+    id "com.google.gms.google-services"  // Ensure this is applied last
 }
 
 android {
     namespace = "com.example.faults"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"  // Make sure you're using the correct NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -21,11 +21,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Specify your own unique Application ID
         applicationId = "com.example.faults"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -33,13 +31,17 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Use debug signing config for now for testing
             signingConfig = signingConfigs.debug
         }
     }
+
+    // Optional: explicitly define where to find google-services.json if needed
+    // googleServices {
+    //     jsonFile = file("android/app/google-services.json")
+    // }
 }
 
 flutter {
-    source = "../.."
+    source = "../.."  // Path to Flutter module if applicable
 }
