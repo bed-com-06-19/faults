@@ -1,3 +1,7 @@
+import 'package:faults/features/user_auth/presentation/pages/admin.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/services.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
 import 'package:flutter/material.dart';
 
 class NavBar extends StatefulWidget {
@@ -10,36 +14,49 @@ class NavBar extends StatefulWidget {
 class _NavBarState extends State<NavBar> {
   int _selectedIndex = 0; // Tracks the selected index for the navbar
 
-  // List of pages to navigate to
-  // Remove the `const` from here, since the pages are not const constructors
-  static final List<Widget> _pages = <Widget>[
-    HomePage(),
-    FaultsPage(),
-    AccountsPage(),
-    SettingsPage(),
-  ];
-
   // Handle navigation when an item is tapped
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == _selectedIndex) return; // Prevents reloading the same page
+
+    if (index == 0) {
+      // Navigate to Admin Page when clicking Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminPage()),
+      );
+    } else if (index == 1) {
+      // Navigate to History Page separately
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HistoryPage()), // Remove 'const'
+      );
+    } else if (index == 2) {
+      // Navigate to Services Page separately
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ServicesPage()), // Remove 'const'
+      );
+    } else if (index == 3) {
+      // Navigate to Settings Page separately
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SettingsPage()), // Remove 'const'
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Display the selected page
-      body: SafeArea(
-        child: _pages[_selectedIndex],
+      body: Center(
+        // You can put the content of each page here
+        child: Text('Selected Index: $_selectedIndex'),
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Current selected index
         onTap: _onItemTapped, // Callback when an item is tapped
         type: BottomNavigationBarType.fixed, // Fixed style for more than 3 items
-        selectedItemColor: Colors.blueAccent, // Color for the selected item
+        selectedItemColor: Colors.green, // Color for the selected item
         unselectedItemColor: Colors.grey, // Color for unselected items
         backgroundColor: Colors.white, // White background color for bottom navbar
         elevation: 8, // Add shadow to the bottom navigation bar for a floating effect
@@ -49,67 +66,18 @@ class _NavBarState extends State<NavBar> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.warning),
-            label: 'Faults',
+            icon: Icon(Icons.history),
+            label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Accounts',
+            icon: Icon(Icons.build),
+            label: 'Services',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Placeholder pages for navigation
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Home Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class FaultsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Faults Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class AccountsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Accounts Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Settings Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }

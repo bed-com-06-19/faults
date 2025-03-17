@@ -1,117 +1,64 @@
+import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
 import 'package:flutter/material.dart';
 
-class AdminPage extends StatefulWidget {
+class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
-
-  @override
-  State<AdminPage> createState() => _AdminPageState();
-}
-
-class _AdminPageState extends State<AdminPage> {
-  int _selectedIndex = 0; // Tracks the selected index for the navbar
-
-  // List of pages to navigate to
-  // Remove `const` here because these pages are not const constructors
-  static final List<Widget> _pages = <Widget>[
-    HomePage(),
-    FaultsPage(),
-    AccountsPage(),
-    SettingsPage(),
-  ];
-
-  // Handle navigation when an item is tapped
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: SafeArea(
-        child: _pages[_selectedIndex], // Display the selected page
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Current selected index
-        onTap: _onItemTapped, // Callback when an item is tapped
-        type: BottomNavigationBarType.fixed, // Fixed style for more than 3 items
-        selectedItemColor: const Color.fromARGB(255, 117, 49, 9), // Color for the selected item
-        unselectedItemColor: Colors.grey, // Color for unselected items
-        backgroundColor: Colors.white,
-        elevation: 10, // Adds shadow to the bottom navigation bar
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+        automaticallyImplyLeading: false, // Remove the back arrow
+        title: const Align(
+          alignment: Alignment.centerLeft, // Align text to the left
+          child: Text(
+            'Admin Dashboard',
+            style: TextStyle(
+              fontWeight: FontWeight.bold, // Make text bold
+              color: Colors.white, // Make text white
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.warning),
-            label: 'Faults',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Accounts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+        ),
+        backgroundColor: Colors.green,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Icon(
+              Icons.notifications, // Notification icon
+              color: Colors.white,
+              size: 30.0, // Increased size of notification icon
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-// Placeholder pages for navigation
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Home Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class FaultsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Faults Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class AccountsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Accounts Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Settings Page',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Faults Icon and Text aligned horizontally
+            Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_outlined, // Fault icon
+                  color: Colors.orange,
+                  size: 50.0, // Adjusted icon size
+                ),
+                const SizedBox(width: 10), // Spacing between icon and text
+                const Text(
+                  '20 faults detected',
+                  style: TextStyle(
+                    fontSize: 22, // Slightly increased text size
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20), // Space before NavBar
+            const Expanded(child: NavBar()), // Use NavBar
+          ],
+        ),
       ),
     );
   }

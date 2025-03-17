@@ -30,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text("Fault Detection System"),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -39,6 +38,23 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const SizedBox(height: 30),
+                // Large green faults icon
+                const Icon(
+                  Icons.warning_amber_rounded, // Faults-related icon
+                  size: 100, // Large size
+                  color: Colors.green, // Green color
+                ),
+                const SizedBox(height: 20),
+                // Title centered at the top
+                const Text(
+                  "Fault Detection System",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green, // Green color for the title
+                    fontSize: 24, // Adjust the font size as needed
+                  ),
+                ),
                 const SizedBox(height: 30),
                 FormContainerWidget(
                   controller: _emailController,
@@ -60,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: Colors.green, // Green color for the container
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
@@ -71,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                           : const Text(
                               "Login",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: Colors.white, // White color for the text
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart'; // Ensure you import icons
 
 class SplashScreen extends StatelessWidget {
   final Widget? child;
@@ -7,7 +8,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Navigate to the next screen after a delay
-    Future.delayed(Duration(seconds: 9), () {
+    Future.delayed(Duration(seconds: 2), () {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => child!),
@@ -20,29 +21,19 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image at the top of the splash screen
-            Image.asset(
-              'assets/logo.png', // Reference your image here
-              width: 150, // Set the width of the image
-              height: 150, // Set the height of the image
-              fit: BoxFit.contain, // Prevent image from being clipped
+            // Large green faults icon
+            Icon(
+              Icons.warning_amber_rounded, // Faults-related icon
+              size: 150, // Large size
+              color: Colors.green, // Green color
             ),
-            SizedBox(height: 30), // Space between the image and the text
+            SizedBox(height: 30), // Space between the icon and the text
             Text(
               "Faults Detection System",
               style: TextStyle(
-                color: Colors.blue,
+                color: Colors.green, // Green color for the text
                 fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20), // Space between the title and remarks
-            Text(
-              "Your gateway to managing faults efficiently!",
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16, // Smaller font size for remarks
+                fontWeight: FontWeight.bold, // Bold text
               ),
               textAlign: TextAlign.center,
             ),
