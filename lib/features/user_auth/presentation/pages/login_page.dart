@@ -39,20 +39,18 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 30),
-                // Large green faults icon
                 const Icon(
-                  Icons.warning_amber_rounded, // Faults-related icon
-                  size: 100, // Large size
-                  color: Colors.green, // Green color
+                  Icons.warning_amber_rounded,
+                  size: 100,
+                  color: Colors.green,
                 ),
                 const SizedBox(height: 20),
-                // Title centered at the top
                 const Text(
                   "Fault Detection System",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green, // Green color for the title
-                    fontSize: 24, // Adjust the font size as needed
+                    color: Colors.green,
+                    fontSize: 24,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -76,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.green, // Green color for the container
+                      color: Colors.green,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
@@ -87,10 +85,26 @@ class _LoginPageState extends State<LoginPage> {
                           : const Text(
                               "Login",
                               style: TextStyle(
-                                color: Colors.white, // White color for the text
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // 🔹 Sign Up Link
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/signup'); // Ensure '/signup' is registered in routes
+                  },
+                  child: const Text(
+                    "Don't have an account? Sign Up",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -102,7 +116,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Method to handle the email/password sign-in
   void _signIn() async {
     setState(() {
       _isSigning = true;
@@ -128,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
 
             if (role == 'admin') {
               Navigator.pushNamed(context, '/admin');
-            }  else if (role == 'worker') {
+            } else if (role == 'worker') {
               Navigator.pushNamed(context, '/worker');
             } else {
               showToast(message: "Invalid user role");

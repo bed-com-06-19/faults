@@ -1,4 +1,5 @@
 import 'package:faults/features/user_auth/presentation/pages/admin.dart';
+import 'package:faults/features/user_auth/presentation/pages/signUp.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
@@ -53,6 +54,7 @@ class FaultDetectionApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashScreen(child: LoginPage()), // Splash Screen
         '/login': (context) => const LoginPage(), // Login Page
+        '/signup': (context) => const SignUpPage(),
         '/admin': (context) => const AdminPage(), // Admin Page
       },
     );
