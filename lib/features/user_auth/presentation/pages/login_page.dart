@@ -39,20 +39,18 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 30),
-                // Large green faults icon
                 const Icon(
-                  Icons.warning_amber_rounded, // Faults-related icon
-                  size: 100, // Large size
-                  color: Colors.green, // Green color
+                  Icons.warning_amber_rounded,
+                  size: 100,
+                  color: Colors.green,
                 ),
                 const SizedBox(height: 20),
-                // Title centered at the top
                 const Text(
                   "Fault Detection System",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green, // Green color for the title
-                    fontSize: 24, // Adjust the font size as needed
+                    color: Colors.green,
+                    fontSize: 24,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -69,14 +67,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 30),
                 GestureDetector(
-                  onTap: () {
-                    _signIn();
-                  },
+                  onTap: _signIn,
                   child: Container(
                     width: double.infinity,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.green, // Green color for the container
+                      color: Colors.green,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
@@ -87,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                           : const Text(
                               "Login",
                               style: TextStyle(
-                                color: Colors.white, // White color for the text
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -102,42 +98,39 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Method to handle the email/password sign-in
+  // Sign-in Method
   void _signIn() async {
     setState(() {
       _isSigning = true;
     });
 
-    String email = _emailController.text;
-    String password = _passwordController.text;
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
 
     try {
       User? user = await _auth.signInWithEmailAndPassword(email, password);
 
       if (user != null) {
+        // Fetch user role from Firestore
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
-          String? role = userDoc['role'];
+          String role = userDoc['role'] ?? "";
 
-          if (role != null) {
+          if (role == 'admin') {
+            showToast(message: "Admin successfully signed in");
+            Navigator.pushReplacementNamed(context, '/admin');
+          } else if (role == 'User') {
             showToast(message: "User successfully signed in");
-
-            if (role == 'admin') {
-              Navigator.pushNamed(context, '/admin');
-            }  else if (role == 'worker') {
-              Navigator.pushNamed(context, '/worker');
-            } else {
-              showToast(message: "Invalid user role");
-            }
+            Navigator.pushReplacementNamed(context, '/user');
           } else {
-            showToast(message: "User role not found");
+            showToast(message: "Unknown role: $role");
           }
         } else {
-          showToast(message: "User document does not exist in Firestore");
+          showToast(message: "User document not found");
         }
       } else {
         showToast(message: "Sign-in failed");
@@ -145,9 +138,11 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       showToast(message: "Error occurred: $e");
     } finally {
-      setState(() {
-        _isSigning = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSigning = false;
+        });
+      }
     }
   }
 }
