@@ -16,10 +16,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
   String _selectedRole = 'worker'; // Default role
-  String _selectedSex = 'Male'; // Default sex
+  String _selectedGender = 'Male'; // Default gender
   bool _isSigningUp = false;
 
   @override
@@ -28,8 +26,6 @@ class _SignUpPageState extends State<SignUpPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
-    _ageController.dispose();
-    _locationController.dispose();
     super.dispose();
   }
 
@@ -42,8 +38,6 @@ class _SignUpPageState extends State<SignUpPage> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     String phone = _phoneController.text.trim();
-    String age = _ageController.text.trim();
-    String location = _locationController.text.trim();
 
     try {
       // Create user in Firebase Auth
@@ -62,9 +56,7 @@ class _SignUpPageState extends State<SignUpPage> {
           'email': email,
           'phone': phone,
           'role': _selectedRole,
-          'sex': _selectedSex,
-          'age': age,
-          'location': location,
+          'gender': _selectedGender,
           'createdAt': FieldValue.serverTimestamp(),
         });
 
@@ -97,18 +89,28 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Back Arrow and Create Account Title
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 30, color: Colors.green),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10), // Add radius for bottom-left
+                    topRight: Radius.circular(10), // Add radius for bottom-right
                   ),
-                  const Spacer(),
-                  const Text(
-                    "Create Account",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white),
-                  ),
-                ],
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.arrow_back, size: 30, color: Colors.white),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      "Create Account",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -166,7 +168,15 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Sex Dropdown
+                      // Phone Number Field (Visible for Admin and Worker)
+                      FormContainerWidget(
+                        controller: _phoneController,
+                        hintText: "Phone Number",
+                        isPasswordField: false,
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Gender Dropdown (Male, Female)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
@@ -174,39 +184,22 @@ class _SignUpPageState extends State<SignUpPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: DropdownButton<String>(
-                          value: _selectedSex,
+                          value: _selectedGender,
                           isExpanded: true,
                           underline: Container(),
-                          items: ['Male', 'Female', 'Other'].map((sex) {
+                          items: ['Male', 'Female'].map((gender) {
                             return DropdownMenuItem(
-                              value: sex,
-                              child: Text(sex),
+                              value: gender,
+                              child: Text(gender),
                             );
                           }).toList(),
                           onChanged: (value) {
                             setState(() {
-                              _selectedSex = value!;
+                              _selectedGender = value!;
                             });
                           },
                         ),
                       ),
-                      const SizedBox(height: 10),
-
-                      // Age Field
-                      FormContainerWidget(
-                        controller: _ageController,
-                        hintText: "Age",
-                        isPasswordField: false,
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Location Field
-                      FormContainerWidget(
-                        controller: _locationController,
-                        hintText: "Location",
-                        isPasswordField: false,
-                      ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
