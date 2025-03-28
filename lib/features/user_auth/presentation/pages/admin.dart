@@ -1,64 +1,79 @@
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/services.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
 import 'package:flutter/material.dart';
 
-class AdminPage extends StatelessWidget {
+
+
+class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
+
+  @override
+  _AdminPageState createState() => _AdminPageState();
+}
+
+class _AdminPageState extends State<AdminPage> {
+  int _selectedIndex = 0; // Track selected index
+
+  // Pages list for navigation
+  final List<Widget> _pages = [
+    const HomePage(),
+    const HistoryPage(),
+    const ServicesPage(),
+    const SettingsPage(),
+  ];
+
+  // Function to handle tab selection
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Remove the back arrow
-        title: const Align(
-          alignment: Alignment.centerLeft, // Align text to the left
-          child: Text(
-            'Admin Dashboard',
-            style: TextStyle(
-              fontWeight: FontWeight.bold, // Make text bold
-              color: Colors.white, // Make text white
-            ),
-          ),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Admin Dashboard',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.green,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: Icon(
-              Icons.notifications, // Notification icon
+              Icons.notifications,
               color: Colors.white,
-              size: 30.0, // Increased size of notification icon
+              size: 30.0,
             ),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Faults Icon and Text aligned horizontally
-            Row(
-              children: [
-                Icon(
-                  Icons.warning_amber_outlined, // Fault icon
-                  color: Colors.orange,
-                  size: 50.0, // Adjusted icon size
-                ),
-                const SizedBox(width: 10), // Spacing between icon and text
-                const Text(
-                  '20 faults detected',
-                  style: TextStyle(
-                    fontSize: 22, // Slightly increased text size
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20), // Space before NavBar
-            const Expanded(child: NavBar()), // Use NavBar
-          ],
-        ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages, // Only updates visible part
+      ),
+      bottomNavigationBar: NavBar(
+        selectedIndex: _selectedIndex, // Pass the current index
+        onItemTapped: _onItemTapped, // Handle tab switching
+      ),
+    );
+  }
+}
+
+// Placeholder HomePage
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text(
+        'Home Page',
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }

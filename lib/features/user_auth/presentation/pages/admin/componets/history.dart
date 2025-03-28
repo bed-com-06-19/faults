@@ -1,4 +1,3 @@
-import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
 import 'package:flutter/material.dart';
 
 class HistoryPage extends StatelessWidget {
@@ -21,7 +20,6 @@ class HistoryPage extends StatelessWidget {
         ),
         backgroundColor: Colors.green,
       ),
-      drawer: const NavBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -70,10 +68,6 @@ class HistoryPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: Container(
-        height: 60,
-        child: const NavBar(),
       ),
     );
   }
