@@ -77,9 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: Center(
                       child: _isSigning
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
                               "Login",
                               style: TextStyle(
@@ -98,7 +96,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Sign-in Method
   void _signIn() async {
     setState(() {
       _isSigning = true;
@@ -111,29 +108,24 @@ class _LoginPageState extends State<LoginPage> {
       User? user = await _auth.signInWithEmailAndPassword(email, password);
 
       if (user != null) {
-        // Fetch user role from Firestore
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
-          String role = userDoc['role'] ?? "";
+          String role = userDoc.get('role') ?? "";
 
           if (role == 'admin') {
             showToast(message: "Admin successfully signed in");
             Navigator.pushReplacementNamed(context, '/admin');
-          } else if (role == 'User') {
+          } else if (role == 'user') {
             showToast(message: "User successfully signed in");
             Navigator.pushReplacementNamed(context, '/user');
-          } else {
-            showToast(message: "Unknown role: $role");
           }
         } else {
           showToast(message: "User document not found");
         }
-      } else {
-        showToast(message: "Sign-in failed");
       }
     } catch (e) {
       showToast(message: "Error occurred: $e");
