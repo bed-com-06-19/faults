@@ -17,7 +17,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadDarkModePreference();
   }
 
-  // Load dark mode preference from SharedPreferences
   Future<void> _loadDarkModePreference() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -25,7 +24,6 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  // Save dark mode preference
   Future<void> _saveDarkModePreference(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isDarkMode', value);
@@ -37,42 +35,28 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text("Settings"),
         backgroundColor: Colors.green,
-        elevation: 4,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Dark Mode Toggle
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: const Icon(Icons.dark_mode, color: Colors.green, size: 30),
-                title: const Text(
-                  "Dark Mode",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                trailing: Switch(
-                  value: isDarkMode,
-                  activeColor: Colors.green,
-                  onChanged: (value) async {
-                    setState(() {
-                      isDarkMode = value;
-                    });
-                    await _saveDarkModePreference(value);
-                    // Restart the app to apply theme changes
-                    if (context.findAncestorStateOfType<_SettingsPageState>() != null) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const SettingsPage(),
-                      ));
-                    }
-                  },
-                ),
-              ),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: const Icon(Icons.dark_mode, color: Colors.green, size: 30),
+            title: const Text("Dark Mode", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            trailing: Switch(
+              value: isDarkMode,
+              activeColor: Colors.green,
+              onChanged: (value) async {
+                setState(() {
+                  isDarkMode = value;
+                });
+                await _saveDarkModePreference(value);
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => const SettingsPage(),
+                ));
+              },
             ),
-          ],
+          ),
         ),
       ),
     );

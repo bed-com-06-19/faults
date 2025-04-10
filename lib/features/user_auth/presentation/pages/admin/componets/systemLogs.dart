@@ -8,50 +8,54 @@ class SystemLogsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("System Logs"),
+        title: const Text('System Logs'),
         backgroundColor: Colors.green,
-        elevation: 4,
       ),
-      body: FutureBuilder<QuerySnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('system_logs') // Fetch logs from the 'system_logs' collection
-            .orderBy('timestamp', descending: true) // Order by timestamp to show the latest first
-            .get(),
-        builder: (context, snapshot) {
-          // Loading indicator while waiting for data
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('login_logs')
+              .orderBy('timestamp', descending: true) // Sort logs by timestamp
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          // If no data or empty collection
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No logs found"));
-          }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-          // Display logs in a list
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              final log = snapshot.data!.docs[index];
-              final username = log['email'] ?? 'Unknown'; // Get username from log
-              final timestamp = (log['timestamp'] as Timestamp).toDate(); // Convert timestamp to DateTime
-              final loginDevice = log['device'] ?? 'Unknown Device'; // Get device info
+            final logs = snapshot.data?.docs ?? [];
 
-              return Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  title: Text(
-                    username,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            return ListView.builder(
+              itemCount: logs.length,
+              itemBuilder: (context, index) {
+                final log = logs[index];
+                final email = log['email'] ?? 'Unknown';
+                final timestamp = (log['timestamp'] as Timestamp?)?.toDate() ??
+                    DateTime.now();
+
+                return Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  subtitle: Text('Logged in at: $timestamp\nDevice: $loginDevice'),
-                  trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                ),
-              );
-            },
-          );
-        },
+                  child: ListTile(
+                    leading: const Icon(Icons.history, color: Colors.green),
+                    title: Text(
+                      email,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                        'Logged in at: ${timestamp.toLocal().toString()}'),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
