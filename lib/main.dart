@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
-
 import 'features/user_auth/presentation/pages/theme.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+// Step 1: Create global notification plugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Step 2: Firebase init
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -23,8 +27,22 @@ void main() async {
     await Firebase.initializeApp();
   }
 
+  // Step 3: Initialize local notifications
+  await initializeNotifications();
+
+  // Step 4: Get theme preference
   final isDarkMode = await _getDarkModePreference();
   runApp(FaultDetectionApp(isDarkMode));
+}
+
+Future<void> initializeNotifications() async {
+  const AndroidInitializationSettings androidInit =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initSettings =
+      InitializationSettings(android: androidInit);
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
 }
 
 Future<bool> _getDarkModePreference() async {
@@ -57,7 +75,7 @@ class _FaultDetectionAppState extends State<FaultDetectionApp> {
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: lightTheme,
       darkTheme: darkTheme,
-      home: const AuthWrapper(), // <-- Now imported cleanly
+      home: const AuthWrapper(), // Handles user/admin routing
     );
   }
 }
