@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -7,48 +9,49 @@ class HistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Fault Detection History',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        title: const Text('Fixed Faults'),
         backgroundColor: Colors.green,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: const [
-            Card(
-              elevation: 2,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: Icon(
-                  Icons.warning_amber_outlined,
-                  color: Colors.orange,
-                ),
-                title: Text('Fault 1'),
-                subtitle: Text('Detected on: 2025-03-17'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              ),
-            ),
-            Card(
-              elevation: 2,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: Icon(
-                  Icons.warning_amber_outlined,
-                  color: Colors.orange,
-                ),
-                title: Text('Fault 2'),
-                subtitle: Text('Detected on: 2025-03-16'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              ),
-            ),
-          ],
-        ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('faults')
+            .where('status', isEqualTo: 'fixed') // 🔍 Only fetch fixed ones
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No fixed faults yet."));
+          }
+
+          final fixedFaults = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: fixedFaults.length,
+            itemBuilder: (context, index) {
+              final fault = fixedFaults[index];
+              final pairName = fault['pairName'];
+              final location = fault['location'];
+              final timestamp = fault['timestamp'];
+
+              final formattedTime = timestamp != null
+                  ? DateFormat('yyyy-MM-dd HH:mm:ss').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                              timestamp.millisecondsSinceEpoch)
+                          .toLocal())
+                  : 'Unknown time';
+
+              return ListTile(
+                leading: const Icon(Icons.check_circle, color: Colors.green),
+                title: Text(pairName),
+                subtitle: Text('Location: $location\nTime: $formattedTime'),
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -4,7 +4,9 @@ import 'package:faults/features/user_auth/presentation/pages/admin/componets/set
 import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
 import 'package:faults/features/user_auth/presentation/pages/notification.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:intl/intl.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -15,10 +17,6 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   int _selectedIndex = 0;
-
-  final StreamController<List<String>> _faultStreamController = StreamController<List<String>>();
-  List<String> _faults = [];
-
   final List<Widget> _pages = [];
 
   @override
@@ -26,7 +24,7 @@ class _AdminPageState extends State<AdminPage> {
     super.initState();
     _startSimulatingFaults();
     _pages.addAll([
-      HomePage(faultStream: _faultStreamController.stream),
+      const HomePage(),
       const HistoryPage(),
       const ServicesPage(),
       const SettingsPage(),
@@ -34,11 +32,22 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _startSimulatingFaults() {
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      final newFault = "Fault detected at Pole-${_faults.length + 1}";
-      _faults.add(newFault);
-      _faultStreamController.add(List.from(_faults));
-      NotificationService.showFaultNotification("New Fault Detected", newFault);
+    Timer.periodic(const Duration(seconds: 20), (timer) async {
+      try {
+        final docRef = await FirebaseFirestore.instance.collection('faults').add({
+          'pairName': "Pole-\${DateTime.now().millisecondsSinceEpoch % 10000}",
+          'location': "Simulated Area",
+          'status': "fault",
+          'timestamp': FieldValue.serverTimestamp(),
+          'notified': true,
+        });
+
+        final newFault = "Fault detected at \${docRef.id}";
+        NotificationService.showFaultNotification("New Fault Detected", newFault);
+        print("✅ Simulated and stored fault: \$newFault");
+      } catch (e) {
+        print("❌ Failed to simulate fault: \$e");
+      }
     });
   }
 
@@ -46,12 +55,6 @@ class _AdminPageState extends State<AdminPage> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  @override
-  void dispose() {
-    _faultStreamController.close();
-    super.dispose();
   }
 
   @override
@@ -69,10 +72,8 @@ class _AdminPageState extends State<AdminPage> {
   }
 }
 
-// HomePage with notification stream
 class HomePage extends StatelessWidget {
-  final Stream<List<String>> faultStream;
-  const HomePage({super.key, required this.faultStream});
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,20 +82,56 @@ class HomePage extends StatelessWidget {
         title: const Text('Admin Dashboard'),
         backgroundColor: Colors.green,
       ),
-      body: StreamBuilder<List<String>>(
-        stream: faultStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No faults detected."));
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('faults')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, faultSnapshot) {
+          if (faultSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          final faults = snapshot.data!;
+          if (!faultSnapshot.hasData || faultSnapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No faults in the database."));
+          }
+
+          final faultDocs = faultSnapshot.data!.docs;
+
           return ListView.builder(
-            itemCount: faults.length,
+            itemCount: faultDocs.length,
             itemBuilder: (context, index) {
+              final fault = faultDocs[index];
+              final status = fault['status'];
+              final pairName = fault['pairName'];
+              final location = fault['location'];
+              final timestamp = fault['timestamp'];
+
+              final formattedTime = timestamp != null
+                  ? DateFormat('yyyy-MM-dd HH:mm:ss').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          timestamp.millisecondsSinceEpoch).toLocal())
+                  : 'Unknown time';
+
               return ListTile(
                 leading: const Icon(Icons.warning, color: Colors.red),
-                title: Text(faults[index]),
+                title: Text(pairName),
+                subtitle: Text('Location: \$location\nStatus: \$status\nTime: \$formattedTime'),
+                trailing: status == 'fault'
+                    ? IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green),
+                        onPressed: () async {
+                          await FirebaseFirestore.instance
+                              .collection('faults')
+                              .doc(fault.id)
+                              .update({'status': 'fixed'});
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Fault marked as fixed")),
+                          );
+                        },
+                      )
+                    : const Icon(Icons.check_circle, color: Colors.green),
               );
             },
           );
