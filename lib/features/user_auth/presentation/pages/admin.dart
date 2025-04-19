@@ -32,7 +32,7 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _startSimulatingFaults() {
-    Timer.periodic(const Duration(seconds: 20), (timer) async {
+    Timer.periodic(const Duration(seconds: 120), (timer) async {
       try {
         final docRef = await FirebaseFirestore.instance.collection('faults').add({
           'pairName': "Pole-\${DateTime.now().millisecondsSinceEpoch % 10000}",
@@ -85,7 +85,7 @@ class HomePage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('faults')
-            .orderBy('timestamp', descending: true)
+            .where('status', isEqualTo: 'fault')
             .snapshots(),
         builder: (context, faultSnapshot) {
           if (faultSnapshot.connectionState == ConnectionState.waiting) {
@@ -93,45 +93,55 @@ class HomePage extends StatelessWidget {
           }
 
           if (!faultSnapshot.hasData || faultSnapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No faults in the database."));
+            return const Center(child: Text("No active faults in the system."));
           }
 
           final faultDocs = faultSnapshot.data!.docs;
+
+          // Sort by timestamp in descending order (handle nulls safely)
+          faultDocs.sort((a, b) {
+            final tsA = a['timestamp'];
+            final tsB = b['timestamp'];
+
+            if (tsA == null || tsB == null) return 0;
+            return tsB.compareTo(tsA);
+          });
 
           return ListView.builder(
             itemCount: faultDocs.length,
             itemBuilder: (context, index) {
               final fault = faultDocs[index];
-              final status = fault['status'];
               final pairName = fault['pairName'];
               final location = fault['location'];
+              final status = fault['status'];
               final timestamp = fault['timestamp'];
 
               final formattedTime = timestamp != null
                   ? DateFormat('yyyy-MM-dd HH:mm:ss').format(
                       DateTime.fromMillisecondsSinceEpoch(
-                          timestamp.millisecondsSinceEpoch).toLocal())
+                        timestamp.millisecondsSinceEpoch,
+                      ).toLocal())
                   : 'Unknown time';
 
               return ListTile(
                 leading: const Icon(Icons.warning, color: Colors.red),
                 title: Text(pairName),
-                subtitle: Text('Location: \$location\nStatus: \$status\nTime: \$formattedTime'),
-                trailing: status == 'fault'
-                    ? IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        onPressed: () async {
-                          await FirebaseFirestore.instance
-                              .collection('faults')
-                              .doc(fault.id)
-                              .update({'status': 'fixed'});
+                subtitle: Text(
+                  "Location: $location\nStatus: $status\nTime: $formattedTime",
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.check, color: Colors.green),
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('faults')
+                        .doc(fault.id)
+                        .update({'status': 'fixed'});
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Fault marked as fixed")),
-                          );
-                        },
-                      )
-                    : const Icon(Icons.check_circle, color: Colors.green),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Fault marked as fixed")),
+                    );
+                  },
+                ),
               );
             },
           );
