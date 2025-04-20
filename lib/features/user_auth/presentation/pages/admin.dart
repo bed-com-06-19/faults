@@ -1,3 +1,4 @@
+import 'package:faults/features/user_auth/presentation/map.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/services.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
@@ -31,25 +32,27 @@ class _AdminPageState extends State<AdminPage> {
     ]);
   }
 
-  void _startSimulatingFaults() {
-    Timer.periodic(const Duration(seconds: 120), (timer) async {
-      try {
-        final docRef = await FirebaseFirestore.instance.collection('faults').add({
-          'pairName': "Pole-\${DateTime.now().millisecondsSinceEpoch % 10000}",
-          'location': "Simulated Area",
-          'status': "fault",
-          'timestamp': FieldValue.serverTimestamp(),
-          'notified': true,
-        });
+ void _startSimulatingFaults() {
+  Timer.periodic(const Duration(seconds: 120), (timer) async {
+    try {
+      final docRef = await FirebaseFirestore.instance.collection('faults').add({
+        'pairName': "Pole-${DateTime.now().millisecondsSinceEpoch % 10000}",
+        'location': "Simulated Area",
+        'status': "fault",
+        'timestamp': FieldValue.serverTimestamp(),
+        'notified': true,
+        'latitude': -13.9833, // Replace with actual lat
+        'longitude': 33.7833, // Replace with actual long
+      });
 
-        final newFault = "Fault detected at \${docRef.id}";
-        NotificationService.showFaultNotification("New Fault Detected", newFault);
-        print("✅ Simulated and stored fault: \$newFault");
-      } catch (e) {
-        print("❌ Failed to simulate fault: \$e");
-      }
-    });
-  }
+      final newFault = "Fault detected at ${docRef.id}";
+      NotificationService.showFaultNotification("New Fault Detected", newFault);
+      print("✅ Simulated and stored fault: $newFault");
+    } catch (e) {
+      print("❌ Failed to simulate fault: $e");
+    }
+  });
+}
 
   void _onItemTapped(int index) {
     setState(() {
@@ -98,11 +101,9 @@ class HomePage extends StatelessWidget {
 
           final faultDocs = faultSnapshot.data!.docs;
 
-          // Sort by timestamp in descending order (handle nulls safely)
           faultDocs.sort((a, b) {
             final tsA = a['timestamp'];
             final tsB = b['timestamp'];
-
             if (tsA == null || tsB == null) return 0;
             return tsB.compareTo(tsA);
           });
@@ -115,6 +116,8 @@ class HomePage extends StatelessWidget {
               final location = fault['location'];
               final status = fault['status'];
               final timestamp = fault['timestamp'];
+              final latitude = fault['latitude'];
+              final longitude = fault['longitude'];
 
               final formattedTime = timestamp != null
                   ? DateFormat('yyyy-MM-dd HH:mm:ss').format(
@@ -123,24 +126,44 @@ class HomePage extends StatelessWidget {
                       ).toLocal())
                   : 'Unknown time';
 
-              return ListTile(
-                leading: const Icon(Icons.warning, color: Colors.red),
-                title: Text(pairName),
-                subtitle: Text(
-                  "Location: $location\nStatus: $status\nTime: $formattedTime",
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.check, color: Colors.green),
-                  onPressed: () async {
-                    await FirebaseFirestore.instance
-                        .collection('faults')
-                        .doc(fault.id)
-                        .update({'status': 'fixed'});
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Fault marked as fixed")),
+              return InkWell(
+                onTap: () {
+                  if (latitude != null && longitude != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapScreen(
+                          latitude: latitude,
+                          longitude: longitude,
+                          pairName: pairName,
+                        ),
+                      ),
                     );
-                  },
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("No location data available.")),
+                    );
+                  }
+                },
+                child: ListTile(
+                  leading: const Icon(Icons.warning, color: Colors.red),
+                  title: Text(pairName),
+                  subtitle: Text(
+                    "Location: $location\nStatus: $status\nTime: $formattedTime",
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.check, color: Colors.green),
+                    onPressed: () async {
+                      await FirebaseFirestore.instance
+                          .collection('faults')
+                          .doc(fault.id)
+                          .update({'status': 'fixed'});
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Fault marked as fixed")),
+                      );
+                    },
+                  ),
                 ),
               );
             },
