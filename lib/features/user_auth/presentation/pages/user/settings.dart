@@ -80,7 +80,7 @@ class AdminDashboard extends StatelessWidget {
                     Switch(
                       value: isDarkMode,
                       onChanged: (val) => toggleTheme(),
-                      activeColor: Colors.green,
+                      activeColor: const Color.fromRGBO(85, 173, 88, 1),
                     ),
                   ],
                 ),
