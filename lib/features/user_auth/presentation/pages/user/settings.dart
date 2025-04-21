@@ -5,7 +5,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -36,10 +36,10 @@ class AdminDashboard extends StatelessWidget {
   final VoidCallback toggleTheme;
 
   const AdminDashboard({
-    Key? key,
+    super.key,
     required this.isDarkMode,
     required this.toggleTheme,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,7 @@ class AdminDashboard extends StatelessWidget {
                     Switch(
                       value: isDarkMode,
                       onChanged: (val) => toggleTheme(),
-                      activeColor: const Color.fromRGBO(85, 173, 88, 1),
+                      activeColor: Colors.green,
                     ),
                   ],
                 ),
