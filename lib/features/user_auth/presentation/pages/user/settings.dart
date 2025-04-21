@@ -50,7 +50,7 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[600],
+        backgroundColor: const Color.fromARGB(255, 76, 155, 80),
         title: const Text(
           'Admin Dashboard',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
