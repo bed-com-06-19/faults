@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:faults/features/user_auth/presentation/pages/user/faults/features;/user_auth/presentation/pages/user/lib/features/user_auth/presentation/pages/admin/components/settings.dart;;'
+import faults/features;/user_auth/presentation/pages/user/lib/features/user_auth/presentation/pages/admin/components/settings.dart
 
 
 
