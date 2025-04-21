@@ -1,132 +1,145 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
-
-  @override
-  _SettingsPageState createState() => _SettingsPageState();
+void main() {
+  runApp(const MyApp());
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  bool isDarkMode = false; // Dark mode toggle
-  String selectedLanguage = "English"; // Language selection
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
-  void initState() {
-    super.initState();
-    _loadDarkModePreference();
-  }
+  State<MyApp> createState() => _MyAppState();
+}
 
-  // Load dark mode preference from SharedPreferences
-  Future<void> _loadDarkModePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isDarkMode = prefs.getBool('isDarkMode') ?? false;
-    });
-  }
-
-  // Save dark mode preference
-  Future<void> _saveDarkModePreference(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isDarkMode', value);
-  }
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: AdminDashboard(
+        isDarkMode: isDarkMode,
+        toggleTheme: () {
+          setState(() {
+            isDarkMode = !isDarkMode;
+          });
+        },
+      ),
+    );
+  }
+}
+
+class AdminDashboard extends StatelessWidget {
+  final bool isDarkMode;
+  final VoidCallback toggleTheme;
+
+  const AdminDashboard({
+    Key? key,
+    required this.isDarkMode,
+    required this.toggleTheme,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
+    bool obscureOld = true;
+    bool obscureNew = true;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
-        backgroundColor: Colors.green,
-        elevation: 4,
+        backgroundColor: Colors.green[600],
+        title: const Text(
+          'Admin Dashboard',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Icon(Icons.notifications, color: Colors.white),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Dark Mode Toggle
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: const Icon(Icons.dark_mode, color: Colors.green, size: 30),
-                title: const Text("Dark Mode", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                trailing: Switch(
-                  value: isDarkMode,
-                  activeColor: Colors.green,
-                  onChanged: (value) async {
-                    setState(() {
-                      isDarkMode = value;
-                    });
-                    await _saveDarkModePreference(value);
-                    // Restart the app to apply theme changes (for now)
-                    // You can use a more elegant solution for theme change
-                    if (context.findAncestorStateOfType<_SettingsPageState>() != null) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => const SettingsPage()));
-                    }
-                  },
+      body: StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                color: Colors.grey[201],
+                child: Row(
+                  children: [
+                    const Icon(Icons.brightness_2, color: Colors.green),
+                    const SizedBox(width: 10),
+                    const Text("theme\nlight/dark", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    Switch(
+                      value: isDarkMode,
+                      onChanged: (val) => toggleTheme(),
+                      activeColor: Colors.green,
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            // Language Selection
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: const Icon(Icons.language, color: Colors.green, size: 30),
-                title: const Text("Language", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                subtitle: Text(selectedLanguage),
-                trailing: DropdownButton<String>(
-                  value: selectedLanguage,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedLanguage = newValue!;
-                    });
-                  },
-                  items: <String>['English', 'French'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+              const SizedBox(height: 20),
+              const Text("change password", style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              TextField(
+                controller: oldPasswordController,
+                obscureText: obscureOld,
+                decoration: InputDecoration(
+                  labelText: 'old password',
+                  suffixIcon: IconButton(
+                    icon: Icon(obscureOld ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => obscureOld = !obscureOld),
+                  ),
+                  border: const OutlineInputBorder(),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            // Account Settings
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: const Icon(Icons.account_circle, color: Colors.green, size: 30),
-                title: const Text("Account Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                onTap: () {
-                  // Navigate to account settings
-                },
+              const SizedBox(height: 10),
+              TextField(
+                controller: newPasswordController,
+                obscureText: obscureNew,
+                decoration: InputDecoration(
+                  labelText: 'new password',
+                  suffixIcon: IconButton(
+                    icon: Icon(obscureNew ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => obscureNew = !obscureNew),
+                  ),
+                  border: const OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            // Security Settings
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                leading: const Icon(Icons.lock, color: Colors.green, size: 30),
-                title: const Text("Security", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                onTap: () {
-                  // Navigate to security settings
-                },
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text("close", style: TextStyle(color: Colors.black)),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      // implement your save logic
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    child: const Text("save"),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const Spacer(),
+              const Divider(),
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.logout),
+                label: const Text("log out"),
+              ),
+            ],
+          ),
         ),
       ),
     );
