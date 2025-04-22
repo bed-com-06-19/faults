@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:faults/features/user_auth/firebase_auth_implementation/authWrapper.dart'; // For navigation
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -32,6 +34,26 @@ class _SettingsPageState extends State<SettingsPage> {
     prefs.setBool('isDarkMode', value);
   }
 
+  // Logout method
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+
+      // Optionally clear any preferences or session data
+      final prefs = await SharedPreferences.getInstance();
+      prefs.clear(); // Clears all saved preferences (optional but recommended)
+
+      // Redirect the user to login screen (navigate to AuthWrapper or LoginPage)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AuthWrapper()), // Assuming AuthWrapper is your login screen
+      );
+    } catch (e) {
+      // Handle any errors here (show an error message if necessary)
+      print("Error during logout: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +83,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     });
                     await _saveDarkModePreference(value);
                     // Restart the app to apply theme changes (for now)
-                    // You can use a more elegant solution for theme change
                     if (context.findAncestorStateOfType<_SettingsPageState>() != null) {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const SettingsPage()));
@@ -98,17 +119,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 10),
 
-            // Account Settings
+            // Logout (previously "Account Settings")
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
-                leading: const Icon(Icons.account_circle, color: Colors.green, size: 30),
-                title: const Text("Account Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                leading: const Icon(Icons.logout, color: Colors.green, size: 30),
+                title: const Text("Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                onTap: () {
-                  // Navigate to account settings
-                },
+                onTap: _logout, // Call the logout function
               ),
             ),
             const SizedBox(height: 10),
