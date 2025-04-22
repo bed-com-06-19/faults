@@ -37,19 +37,15 @@ class _SettingsPageState extends State<SettingsPage> {
   // Logout method
   Future<void> _logout() async {
     try {
-      await FirebaseAuth.instance.signOut(); // Sign out from Firebase
-
-      // Optionally clear any preferences or session data
+      await FirebaseAuth.instance.signOut();
       final prefs = await SharedPreferences.getInstance();
-      prefs.clear(); // Clears all saved preferences (optional but recommended)
+      prefs.clear();
 
-      // Redirect the user to login screen (navigate to AuthWrapper or LoginPage)
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AuthWrapper()), // Assuming AuthWrapper is your login screen
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
       );
     } catch (e) {
-      // Handle any errors here (show an error message if necessary)
       print("Error during logout: $e");
     }
   }
@@ -61,6 +57,17 @@ class _SettingsPageState extends State<SettingsPage> {
         title: const Text("Settings"),
         backgroundColor: Colors.green,
         elevation: 4,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            color: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No new notifications')),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -82,11 +89,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       isDarkMode = value;
                     });
                     await _saveDarkModePreference(value);
-                    // Restart the app to apply theme changes (for now)
-                    if (context.findAncestorStateOfType<_SettingsPageState>() != null) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => const SettingsPage()));
-                    }
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const SettingsPage()),
+                    );
                   },
                 ),
               ),
@@ -108,7 +113,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       selectedLanguage = newValue!;
                     });
                   },
-                  items: <String>['English', 'French'].map<DropdownMenuItem<String>>((String value) {
+                  items: <String>['English', 'French']
+                      .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -119,7 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 10),
 
-            // Logout (previously "Account Settings")
+            // Logout
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -127,7 +133,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.logout, color: Colors.green, size: 30),
                 title: const Text("Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                onTap: _logout, // Call the logout function
+                onTap: _logout,
               ),
             ),
             const SizedBox(height: 10),
