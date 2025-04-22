@@ -1,5 +1,5 @@
-import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
-import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
+import 'package:faults/features/user_auth/presentation/pages/user/history.dart';
+import 'package:faults/features/user_auth/presentation/pages/user/settings.dart';
 import 'package:flutter/material.dart';
 
 class UserHomePage extends StatefulWidget {
