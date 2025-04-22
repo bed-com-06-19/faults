@@ -48,7 +48,20 @@ class UserDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("User Dashboard"), backgroundColor: Colors.green),
+      appBar: AppBar(
+        title: const Text("User Dashboard"),
+        backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            color: Colors.white, // White color for the bell icon
+            onPressed: () {
+              // You can add a notification or some action here
+              print('Notification icon pressed');
+            },
+          ),
+        ],
+      ),
       body: const Center(child: Text("Welcome to your dashboard!")),
     );
   }
