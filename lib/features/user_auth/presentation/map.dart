@@ -26,7 +26,7 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _userLocation;
   List<LatLng> _routePoints = [];
 
-  // 🔑 Move accessToken here so it can be used globally in this class
+  // accessToken
   final String accessToken = 'pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg';
 
   @override

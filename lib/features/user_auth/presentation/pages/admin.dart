@@ -41,8 +41,8 @@ class _AdminPageState extends State<AdminPage> {
         'status': "fault",
         'timestamp': FieldValue.serverTimestamp(),
         'notified': true,
-        'latitude': -13.9833, // Replace with actual lat
-        'longitude': 33.7833, // Replace with actual long
+        'latitude': -13.9833,
+        'longitude': 33.7833,
       });
 
       final newFault = "Fault detected at ${docRef.id}";
