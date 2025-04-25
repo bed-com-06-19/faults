@@ -7,6 +7,7 @@ import 'package:faults/features/user_auth/presentation/pages/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'dart:math';
 import 'package:intl/intl.dart';
 
 class AdminPage extends StatefulWidget {
@@ -19,6 +20,7 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [];
+  final Random _random = Random();
 
   @override
   void initState() {
@@ -32,27 +34,35 @@ class _AdminPageState extends State<AdminPage> {
     ]);
   }
 
- void _startSimulatingFaults() {
-  Timer.periodic(const Duration(seconds: 2000), (timer) async {
-    try {
-      final docRef = await FirebaseFirestore.instance.collection('faults').add({
-        'pairName': "Pole-${DateTime.now().millisecondsSinceEpoch % 10000}",
-        'location': "Simulated Area",
-        'status': "fault",
-        'timestamp': FieldValue.serverTimestamp(),
-        'notified': true,
-        'latitude': -13.9833,
-        'longitude': 33.7833,
-      });
+  void _startSimulatingFaults() {
+    Timer.periodic(const Duration(seconds: 500), (timer) async {
+      try {
+        final double baseLat = -15.3850; // Central Zomba
+        final double baseLng = 35.3182;
 
-      final newFault = "Fault detected at ${docRef.id}";
-      NotificationService.showFaultNotification("New Fault Detected", newFault);
-      print("✅ Simulated and stored fault: $newFault");
-    } catch (e) {
-      print("❌ Failed to simulate fault: $e");
-    }
-  });
-}
+        double offsetLat = (_random.nextDouble() - 0.5) / 100; // ~±0.005
+        double offsetLng = (_random.nextDouble() - 0.5) / 100;
+
+        final pairName = "Pole-${DateTime.now().millisecondsSinceEpoch % 10000}";
+
+        final docRef = await FirebaseFirestore.instance.collection('faults').add({
+          'pairName': pairName,
+          'location': "Zomba Area",
+          'status': "fault",
+          'timestamp': FieldValue.serverTimestamp(),
+          'notified': true,
+          'latitude': baseLat + offsetLat,
+          'longitude': baseLng + offsetLng,
+        });
+
+        final newFault = "Fault detected at ${docRef.id}";
+        NotificationService.showFaultNotification("New Fault Detected", newFault);
+        print("✅ Simulated and stored fault: $newFault");
+      } catch (e) {
+        print("❌ Failed to simulate fault: $e");
+      }
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -121,9 +131,9 @@ class HomePage extends StatelessWidget {
 
               final formattedTime = timestamp != null
                   ? DateFormat('yyyy-MM-dd HH:mm:ss').format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                        timestamp.millisecondsSinceEpoch,
-                      ).toLocal())
+                  DateTime.fromMillisecondsSinceEpoch(
+                    timestamp.millisecondsSinceEpoch,
+                  ).toLocal())
                   : 'Unknown time';
 
               return InkWell(
