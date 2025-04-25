@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,6 +24,10 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   LatLng? _userLocation;
+  List<LatLng> _routePoints = [];
+
+  // 🔑 Move accessToken here so it can be used globally in this class
+  final String accessToken = 'pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg';
 
   @override
   void initState() {
@@ -35,10 +41,10 @@ class _MapScreenState extends State<MapScreen> {
       setState(() {
         _userLocation = loc;
       });
+      _getRoute(loc, LatLng(widget.latitude, widget.longitude));
     }
   }
 
-  // 📍 Get Current User Location
   Future<LatLng?> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return null;
@@ -53,7 +59,23 @@ class _MapScreenState extends State<MapScreen> {
     return LatLng(position.latitude, position.longitude);
   }
 
-  // 🌐 Launch Google Maps Directions
+  Future<void> _getRoute(LatLng from, LatLng to) async {
+    final url =
+        'https://api.mapbox.com/directions/v5/mapbox/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?geometries=geojson&access_token=$accessToken';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final coords = data['routes'][0]['geometry']['coordinates'] as List;
+
+      final points = coords.map((c) => LatLng(c[1], c[0])).toList();
+      setState(() {
+        _routePoints = points;
+      });
+    }
+  }
+
   void _openInGoogleMaps() async {
     final googleUrl =
         'https://www.google.com/maps/dir/?api=1&destination=${widget.latitude},${widget.longitude}&travelmode=driving';
@@ -84,14 +106,15 @@ class _MapScreenState extends State<MapScreen> {
       body: FlutterMap(
         options: MapOptions(
           center: faultLocation,
-          zoom: 15,
+          zoom: 14,
         ),
         children: [
           TileLayer(
             urlTemplate:
-            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg',
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken',
             additionalOptions: {
-              'accessToken': 'pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg',
+              'accessToken': accessToken,
+              'id': 'mapbox.streets',
             },
           ),
           MarkerLayer(
@@ -111,11 +134,11 @@ class _MapScreenState extends State<MapScreen> {
                 ),
             ],
           ),
-          if (_userLocation != null)
+          if (_routePoints.isNotEmpty)
             PolylineLayer(
               polylines: [
                 Polyline(
-                  points: [_userLocation!, faultLocation],
+                  points: _routePoints,
                   strokeWidth: 4.0,
                   color: Colors.blue,
                 ),
