@@ -33,7 +33,7 @@ class _AdminPageState extends State<AdminPage> {
   }
 
  void _startSimulatingFaults() {
-  Timer.periodic(const Duration(seconds: 120), (timer) async {
+  Timer.periodic(const Duration(seconds: 2000), (timer) async {
     try {
       final docRef = await FirebaseFirestore.instance.collection('faults').add({
         'pairName': "Pole-${DateTime.now().millisecondsSinceEpoch % 10000}",
