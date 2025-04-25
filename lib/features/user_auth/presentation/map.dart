@@ -38,7 +38,7 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // 📍 1. Get Current User Location
+  // 📍 Get Current User Location
   Future<LatLng?> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return null;
@@ -53,7 +53,7 @@ class _MapScreenState extends State<MapScreen> {
     return LatLng(position.latitude, position.longitude);
   }
 
-  // 🌐 2. Launch in Google Maps
+  // 🌐 Launch Google Maps Directions
   void _openInGoogleMaps() async {
     final googleUrl =
         'https://www.google.com/maps/dir/?api=1&destination=${widget.latitude},${widget.longitude}&travelmode=driving';
@@ -94,28 +94,23 @@ class _MapScreenState extends State<MapScreen> {
               'accessToken': 'pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg',
             },
           ),
-
-          // 🛠️ Fault Marker
           MarkerLayer(
             markers: [
               Marker(
                 point: faultLocation,
                 width: 40,
                 height: 40,
-                builder: (ctx) => const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
               ),
-              // 📍 Optional User Location Marker
               if (_userLocation != null)
                 Marker(
                   point: _userLocation!,
                   width: 40,
                   height: 40,
-                  builder: (ctx) => const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                  child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
                 ),
             ],
           ),
-
-          // 🧭 Route Line (Optional)
           if (_userLocation != null)
             PolylineLayer(
               polylines: [
