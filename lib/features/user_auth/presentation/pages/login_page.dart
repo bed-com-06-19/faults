@@ -88,6 +88,16 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                Center(
+                  child: TextButton(
+                    onPressed: _forgotPassword,
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -135,6 +145,22 @@ class _LoginPageState extends State<LoginPage> {
           _isSigning = false;
         });
       }
+    }
+  }
+
+  void _forgotPassword() async {
+    String email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      showToast(message: "Please enter your email first");
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      showToast(message: "Password reset link sent! Check your email.");
+    } catch (e) {
+      showToast(message: "Error: $e");
     }
   }
 }
