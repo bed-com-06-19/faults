@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:faults/features/user_auth/presentation/pages/forgot_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:faults/features/user_auth/presentation/widgets/form_container_widget.dart';
 import 'package:faults/global/common/toast.dart';
 import '../../firebase_auth_implementation/firebase_auth_services.dart';
+import 'forgot_password_page.dart'; // Import ForgotPasswordPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -91,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 Center(
                   child: TextButton(
-                    onPressed: _forgotPassword,
+                    onPressed: _navigateToForgotPassword, // Navigate on click
                     child: const Text(
                       "Forgot Password?",
                       style: TextStyle(color: Colors.green),
@@ -148,19 +150,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _forgotPassword() async {
-    String email = _emailController.text.trim();
-
-    if (email.isEmpty) {
-      showToast(message: "Please enter your email first");
-      return;
-    }
-
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      showToast(message: "Password reset link sent! Check your email.");
-    } catch (e) {
-      showToast(message: "Error: $e");
-    }
+  // Navigate to ForgotPasswordPage
+  void _navigateToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()), // Your ForgotPasswordPage
+    );
   }
 }
