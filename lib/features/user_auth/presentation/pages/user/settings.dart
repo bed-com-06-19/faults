@@ -11,31 +11,31 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool isDarkMode = false; // Dark mode toggle
-  String selectedLanguage = "English"; // Language selection
+  bool darkModeEnabled = false; // Dark mode toggle
+  String currentLanguage = "English"; // Language selection
 
   @override
   void initState() {
     super.initState();
-    _loadDarkModePreference();
+    _retrieveDarkModePreference();
   }
 
-  // Load dark mode preference from SharedPreferences
-  Future<void> _loadDarkModePreference() async {
+  // Retrieve dark mode preference from SharedPreferences
+  Future<void> _retrieveDarkModePreference() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      isDarkMode = prefs.getBool('isDarkMode') ?? false;
+      darkModeEnabled = prefs.getBool('darkModeEnabled') ?? false;
     });
   }
 
-  // Save dark mode preference
-  Future<void> _saveDarkModePreference(bool value) async {
+  // Store dark mode preference
+  Future<void> _storeDarkModePreference(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isDarkMode', value);
+    prefs.setBool('darkModeEnabled', value);
   }
 
   // Logout method
-  Future<void> _logout() async {
+  Future<void> _signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
       final prefs = await SharedPreferences.getInstance();
@@ -46,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
         MaterialPageRoute(builder: (context) => const AuthWrapper()),
       );
     } catch (e) {
-      print("Error during logout: $e");
+      print("Error during sign out: $e");
     }
   }
 
@@ -82,13 +82,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.dark_mode, color: Colors.green, size: 30),
                 title: const Text("Dark Mode", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 trailing: Switch(
-                  value: isDarkMode,
+                  value: darkModeEnabled,
                   activeColor: Colors.green,
                   onChanged: (value) async {
                     setState(() {
-                      isDarkMode = value;
+                      darkModeEnabled = value;
                     });
-                    await _saveDarkModePreference(value);
+                    await _storeDarkModePreference(value);
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => const SettingsPage()),
                     );
@@ -105,12 +105,12 @@ class _SettingsPageState extends State<SettingsPage> {
               child: ListTile(
                 leading: const Icon(Icons.language, color: Colors.green, size: 30),
                 title: const Text("Language", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                subtitle: Text(selectedLanguage),
+                subtitle: Text(currentLanguage),
                 trailing: DropdownButton<String>(
-                  value: selectedLanguage,
+                  value: currentLanguage,
                   onChanged: (String? newValue) {
                     setState(() {
-                      selectedLanguage = newValue!;
+                      currentLanguage = newValue!;
                     });
                   },
                   items: <String>['English', 'French']
@@ -133,7 +133,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.logout, color: Colors.green, size: 30),
                 title: const Text("Logout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-                onTap: _logout,
+                onTap: _signOut,
               ),
             ),
             const SizedBox(height: 10),
