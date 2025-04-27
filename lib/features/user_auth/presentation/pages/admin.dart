@@ -1,3 +1,4 @@
+import 'package:faults/features/user_auth/presentation/fullmap.dart';
 import 'package:faults/features/user_auth/presentation/map.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/services.dart';
@@ -35,7 +36,7 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _startSimulatingFaults() {
-    Timer.periodic(const Duration(seconds: 500), (timer) async {
+    Timer.periodic(const Duration(seconds: 50000), (timer) async {
       try {
         final double baseLat = -15.3850; // Central Zomba
         final double baseLng = 35.3182;
@@ -94,6 +95,17 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FullMapScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -179,6 +191,17 @@ class HomePage extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const FullMapScreen()),
+          );
+        },
+        label: const Text('View All Poles'),
+        icon: const Icon(Icons.location_pin),
+        backgroundColor: Colors.green,
       ),
     );
   }
