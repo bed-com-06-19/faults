@@ -1,7 +1,7 @@
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/maintenance.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/systemLogs.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/userManagement.dart';
 import 'package:flutter/material.dart';
-
 
 class ServicesPage extends StatelessWidget {
   const ServicesPage({super.key});
@@ -11,22 +11,22 @@ class ServicesPage extends StatelessWidget {
     // Updated list of services
     final List<Map<String, dynamic>> services = [
       {
-        "title": "Maintenance Reports",
-        "icon": Icons.receipt_long,
-        "desc": "Generate reports for fixed faults.",
-        "route": null, // No navigation yet
+        "title": "Maintenance Insights", // <-- NEW ITEM
+        "icon": Icons.analytics,
+        "desc": "View areas most affected and fault trends.",
+        "route": const MaintenanceInsightsPage(), // Navigate to Maintenance Insights
       },
       {
         "title": "User Management",
         "icon": Icons.people,
         "desc": "Manage technicians and system users.",
-        "route": const UserManagementPage(), // Navigate to User Management
+        "route": const UserManagementPage(),
       },
       {
         "title": "System Logs",
         "icon": Icons.history,
         "desc": "View recent login activity of users.",
-        "route": const SystemLogsPage(), // Navigate to System Logs
+        "route": const SystemLogsPage(),
       },
     ];
 
