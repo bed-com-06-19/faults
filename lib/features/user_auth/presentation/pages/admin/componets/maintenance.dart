@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'history.dart'; // For Maintenance Report button
+import 'history.dart';
 
 class MaintenanceInsightsPage extends StatefulWidget {
   const MaintenanceInsightsPage({super.key});
@@ -16,7 +16,7 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
   Map<String, int> _poleFaultCounts = {};
   List<DateTime> _faultDates = [];
 
-  String _selectedView = 'Weekly'; // Default view
+  String _selectedView = 'Weekly';
 
   @override
   void initState() {
@@ -56,21 +56,17 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
 
     for (var date in _faultDates) {
       String key;
-      try {
-        if (_selectedView == 'Daily') {
-          key = DateFormat('yyyy-MM-dd').format(date);
-        } else if (_selectedView == 'Weekly') {
-          int weekOfYear = int.parse(DateFormat('w').format(date));
-          key = 'Week $weekOfYear';
-        } else {
-          key = DateFormat('yyyy-MM').format(date);
-        }
-
-        print("Generated key: $key for date: $date");  // Debugging line
-        groupedData[key] = (groupedData[key] ?? 0) + 1;
-      } catch (e) {
-        print("Error formatting date: $date, error: $e");
+      if (_selectedView == 'Daily') {
+        key = DateFormat('yyyy-MM-dd').format(date);
+      } else if (_selectedView == 'Weekly') {
+        String weekString = DateFormat('w').format(date);
+        int weekOfYear = int.tryParse(weekString) ?? 0;
+        key = 'W$weekOfYear';
+      } else {
+        key = DateFormat('yyyy-MM').format(date);
       }
+
+      groupedData[key] = (groupedData[key] ?? 0) + 1;
     }
 
     List<String> sortedKeys = groupedData.keys.toList()..sort();
@@ -79,12 +75,37 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
       final count = groupedData[key]!;
       return BarChartGroupData(
         x: index,
-        barRods: [
-          BarChartRodData(toY: count.toDouble(), color: Colors.green),
-        ],
+        barRods: [BarChartRodData(toY: count.toDouble(), color: Colors.green)],
         showingTooltipIndicators: [0],
       );
     });
+  }
+
+  FlTitlesData _buildTitles(List<String> labels) {
+    return FlTitlesData(
+      show: true,
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) {
+            final index = value.toInt();
+            if (index >= 0 && index < labels.length) {
+              return Text(labels[index], style: const TextStyle(fontSize: 10));
+            }
+            return const Text('');
+          },
+        ),
+      ),
+      leftTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          interval: 1,
+          getTitlesWidget: (value, meta) => Text('${value.toInt()}'),
+        ),
+      ),
+      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    );
   }
 
   @override
@@ -93,9 +114,20 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
       ..sort((a, b) => b.value.compareTo(a.value));
     final sortedPoles = _poleFaultCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-
-    // Limit the number of poles shown (e.g., top 5 poles)
     final topFaultyPoles = sortedPoles.take(5).toList();
+
+    final groupedKeys = _faultDates.map((date) {
+      if (_selectedView == 'Daily') {
+        return DateFormat('yyyy-MM-dd').format(date);
+      } else if (_selectedView == 'Weekly') {
+        String weekString = DateFormat('w').format(date);
+        int weekOfYear = int.tryParse(weekString) ?? 0;
+        return 'W$weekOfYear';
+      } else {
+        return DateFormat('yyyy-MM').format(date);
+      }
+    }).toSet().toList()
+      ..sort();
 
     return Scaffold(
       appBar: AppBar(
@@ -110,7 +142,6 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // Top Affected Areas
             const Text("🏠 Top Affected Areas:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...sortedAreas.map((entry) => ListTile(
@@ -121,7 +152,6 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
 
             const SizedBox(height: 16),
 
-            // Most Faulty Poles (Top 5)
             const Text("⚡ Poles with Most Faults:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...topFaultyPoles.map((entry) => ListTile(
@@ -132,7 +162,6 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
 
             const SizedBox(height: 16),
 
-            // Chart with time filter
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -157,19 +186,19 @@ class _MaintenanceInsightsPageState extends State<MaintenanceInsightsPage> {
             const SizedBox(height: 8),
 
             SizedBox(
-              height: 250,
+              height: 280,
               child: BarChart(
                 BarChartData(
                   barGroups: _generateChartData(),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(show: false),
+                  borderData: FlBorderData(show: true),
+                  gridData: FlGridData(show: true),
+                  titlesData: _buildTitles(groupedKeys),
                 ),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Button to Full Report (HistoryPage)
             Center(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
