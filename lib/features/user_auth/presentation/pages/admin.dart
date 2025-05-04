@@ -5,6 +5,7 @@ import 'package:faults/features/user_auth/presentation/pages/admin/componets/ser
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
 import 'package:faults/features/user_auth/presentation/pages/notification.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
@@ -86,14 +87,49 @@ class _AdminPageState extends State<AdminPage> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _userName = ''; // Store the logged-in user's name
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+  }
+
+  // Fetch the logged-in user's name from Firestore
+  Future<void> _fetchUserName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        // Get the user's document from Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          setState(() {
+            _userName = userDoc['name']; // Assuming 'name' is the field in Firestore
+          });
+        }
+      } catch (e) {
+        print("Error fetching user name: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: Text(_userName.isNotEmpty ? 'Welcome, $_userName' : 'Loading...'), // Dynamically display the user's name
         backgroundColor: Colors.green,
         actions: [
           IconButton(
