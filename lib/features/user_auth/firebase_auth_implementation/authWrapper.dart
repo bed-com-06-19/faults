@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:faults/features/user_auth/presentation/pages/user/user.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin.dart';
 import 'package:faults/features/user_auth/presentation/pages/login_page.dart';
@@ -60,7 +59,7 @@ class AuthWrapper extends StatelessWidget {
             if (role == 'admin') {
               return const AdminPage();
             } else if (role == 'user') {
-              return const UserHomePage();
+              return const UserPage();
             } else {
               FirebaseAuth.instance.signOut(); // Invalid role
               return const LoginPage();
