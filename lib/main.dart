@@ -7,7 +7,7 @@ import 'features/user_auth/presentation/pages/theme.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +34,10 @@ void main() async {
 
 Future<void> initializeNotifications() async {
   const AndroidInitializationSettings androidInit =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const InitializationSettings initSettings =
-      InitializationSettings(android: androidInit);
+  InitializationSettings(android: androidInit);
 
   await flutterLocalNotificationsPlugin.initialize(initSettings);
 }

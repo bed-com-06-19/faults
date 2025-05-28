@@ -26,7 +26,6 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _userLocation;
   List<LatLng> _routePoints = [];
 
-  // accessToken
   final String accessToken = 'pk.eyJ1Ijoicm9zaWVtYXJpZSIsImEiOiJjbTk3aDZsNXQwNXQyMm1zZWl5YWsweGtuIn0.4-37gV-0oP-KZl65Sxqxfg';
 
   @override
@@ -64,11 +63,9 @@ class _MapScreenState extends State<MapScreen> {
         'https://api.mapbox.com/directions/v5/mapbox/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?geometries=geojson&access_token=$accessToken';
 
     final response = await http.get(Uri.parse(url));
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final coords = data['routes'][0]['geometry']['coordinates'] as List;
-
       final points = coords.map((c) => LatLng(c[1], c[0])).toList();
       setState(() {
         _routePoints = points;

@@ -1,10 +1,7 @@
-// user_management_page.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/addPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 
 class UserManagementPage extends StatefulWidget {
   const UserManagementPage({super.key});
@@ -60,7 +57,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 2,
+            childAspectRatio: 1.3, // Increased height per card
           ),
           itemCount: _users.length,
           itemBuilder: (context, index) {
@@ -68,44 +65,49 @@ class _UserManagementPageState extends State<UserManagementPage> {
             var data = user.data() as Map<String, dynamic>;
             return Card(
               margin: const EdgeInsets.all(8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Name: ${data['name']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text("Email: ${data['email']}"),
-                    Text("Phone: ${data['phone']}"),
-                    Text("Department: ${data['department']}"),
-                    Text("Age: ${data['age']}"),
-                    Text("Gender: ${data['gender']}"),
-                    Text("Role: ${data['role']}"),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AddOrEditUserPage(
-                                  userId: user.id,
-                                  userData: data,
+                padding: const EdgeInsets.all(8),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Name: ${data['name']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text("Email: ${data['email']}"),
+                      Text("Phone: ${data['phone']}"),
+                      Text("Department: ${data['department']}"),
+                      Text("Age: ${data['age']}"),
+                      Text("Gender: ${data['gender']}"),
+                      Text("Role: ${data['role']}"),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AddOrEditUserPage(
+                                    userId: user.id,
+                                    userData: data,
+                                  ),
                                 ),
-                              ),
-                            );
-                            if (result == true) _loadUsers();
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteUser(user.id),
-                        ),
-                      ],
-                    ),
-                  ],
+                              );
+                              if (result == true) _loadUsers();
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteUser(user.id),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

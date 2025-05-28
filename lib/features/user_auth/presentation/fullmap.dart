@@ -76,12 +76,13 @@ class _FullMapScreenState extends State<FullMapScreen> {
       ),
       body: FlutterMap(
         options: MapOptions(
-          center: LatLng(-15.3850, 35.3182), // Center around Zomba
+          center: LatLng(-15.3850, 35.3182), // Zomba
           zoom: 13,
         ),
         children: [
           TileLayer(
-            urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken',
+            urlTemplate:
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken',
             additionalOptions: {
               'accessToken': accessToken,
               'id': 'mapbox.streets',

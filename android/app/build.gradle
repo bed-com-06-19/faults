@@ -1,7 +1,6 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"  // Ensure this is applied last
 }
@@ -9,11 +8,12 @@ plugins {
 android {
     namespace = "com.example.faults"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"  // Make sure you're using the correct NDK version
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -21,7 +21,6 @@ android {
     }
 
     defaultConfig {
-        // Specify your own unique Application ID
         applicationId = "com.example.faults"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
@@ -31,17 +30,15 @@ android {
 
     buildTypes {
         release {
-            // Use debug signing config for now for testing
             signingConfig = signingConfigs.debug
         }
     }
-
-    // Optional: explicitly define where to find google-services.json if needed
-    // googleServices {
-    //     jsonFile = file("android/app/google-services.json")
-    // }
 }
 
 flutter {
-    source = "../.."  // Path to Flutter module if applicable
+    source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
