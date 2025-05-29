@@ -1,8 +1,8 @@
-import 'package:faults/features/user_auth/presentation/map.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:faults/features/user_auth/presentation/map.dart';
 
 class FullMapScreen extends StatefulWidget {
   const FullMapScreen({super.key});
@@ -28,10 +28,13 @@ class _FullMapScreenState extends State<FullMapScreen> {
 
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      final lat = data['latitude'];
-      final lng = data['longitude'];
+      final latRaw = data['latitude'];
+      final lngRaw = data['longitude'];
       final pairName = data['pairName'] ?? 'Unknown Pole';
       final status = data['status'] ?? 'fault';
+
+      double? lat = double.tryParse(latRaw.toString());
+      double? lng = double.tryParse(lngRaw.toString());
 
       if (lat != null && lng != null) {
         tempMarkers.add(
@@ -73,20 +76,22 @@ class _FullMapScreenState extends State<FullMapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Poles'),
+        backgroundColor: Colors.green,
       ),
       body: FlutterMap(
         options: MapOptions(
-          center: LatLng(-15.3850, 35.3182), // Zomba
-          zoom: 13,
+          center: LatLng(-15.3850, 35.3182), // Zomba default center
+          zoom: 13.0,
+          interactiveFlags: InteractiveFlag.all,
         ),
         children: [
           TileLayer(
             urlTemplate:
-            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken',
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
             additionalOptions: {
               'accessToken': accessToken,
-              'id': 'mapbox.streets',
             },
+            userAgentPackageName: 'com.example.faults',
           ),
           MarkerLayer(markers: _markers),
         ],

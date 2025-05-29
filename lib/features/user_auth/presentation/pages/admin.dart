@@ -1,15 +1,82 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:faults/features/user_auth/presentation/fullmap.dart';
 import 'package:faults/features/user_auth/presentation/map.dart';
-import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';  // For HistoryPage
+import 'package:faults/features/user_auth/presentation/pages/admin/componets/history.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/services.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/componets/settings.dart';
 import 'package:faults/features/user_auth/presentation/pages/admin/navbar.dart';
-import 'package:faults/features/user_auth/presentation/pages/notification.dart';  // NotificationService assumed here
+
+class ThingSpeakService {
+  static const String channelId = '2931876';
+  static const String readApiKey = 'AZBAY4XTSCGO9FCH';
+
+  static Future<void> fetchAndSaveThingSpeakData() async {
+    final url = Uri.parse(
+      'https://api.thingspeak.com/channels/$channelId/feeds.json?api_key=$readApiKey&results=1',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final feeds = data['feeds'] as List<dynamic>;
+
+        if (feeds.isNotEmpty) {
+          final latestFeed = feeds[0];
+          final createdAt = latestFeed['created_at'];
+
+          final field1 = int.tryParse(latestFeed['field1'] ?? '0') ?? 0;
+          final field2 = latestFeed['field2'] ?? 'Unknown';
+          final field3 = latestFeed['field3'] ?? '0.0';
+          final field4 = latestFeed['field4'] ?? '0.0';
+          final field5 = latestFeed['field5'] ?? 'Unknown';
+          final field6 = latestFeed['field6'] == 'true';
+          final field7 = latestFeed['field7'] ?? 'fault';
+          final timestamp = DateTime.tryParse(createdAt) ?? DateTime.now();
+
+          final lastDocQuery = await FirebaseFirestore.instance
+              .collection('fault')
+              .orderBy('timestamp', descending: true)
+              .limit(1)
+              .get();
+
+          if (lastDocQuery.docs.isNotEmpty) {
+            final lastDoc = lastDocQuery.docs.first;
+            if (lastDoc.get('electricityStatus') == field1) {
+              print('🔁 No change in status, skipping Firestore update.');
+              return;
+            }
+          }
+
+          await FirebaseFirestore.instance.collection('fault').add({
+            'electricityStatus': field1,
+            'pairName': field2,
+            'latitude': field3,
+            'longitude': field4,
+            'location': field5,
+            'notified': field6,
+            'status': field7,
+            'timestamp': timestamp,
+            'field8': createdAt,
+          });
+
+          print('✅ New data saved to Firestore.');
+        }
+      } else {
+        print('❌ Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Fetch error: $e');
+    }
+  }
+}
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -20,18 +87,33 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   int _selectedIndex = 0;
-
   late final List<Widget> _pages;
+  Timer? _fetchTimer;
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      const HomePage(),
-      const HistoryPage(),
-      const ServicesPage(),
-      const SettingsPage(),
+
+    _pages = const [
+      HomePage(),
+      HistoryPage(),
+      ServicesPage(),
+      SettingsPage(),
     ];
+
+    // Initial fetch
+    ThingSpeakService.fetchAndSaveThingSpeakData();
+
+    // Fetch every 5 seconds
+    _fetchTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      ThingSpeakService.fetchAndSaveThingSpeakData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _fetchTimer?.cancel();
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
@@ -43,10 +125,7 @@ class _AdminPageState extends State<AdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: NavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
@@ -54,8 +133,6 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 }
-
-// ------------------- HomePage: Show only detected faults -------------------
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,7 +143,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _userName = '';
-  final Set<String> _knownFaultIds = {};
   String searchQuery = '';
 
   @override
@@ -86,11 +162,11 @@ class _HomePageState extends State<HomePage> {
 
         if (userDoc.exists) {
           setState(() {
-            _userName = userDoc['name'];
+            _userName = userDoc.get('name') ?? '';
           });
         }
       } catch (e) {
-        print("Error fetching user name: $e");
+        debugPrint("Error fetching user name: $e");
       }
     }
   }
@@ -115,18 +191,18 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // Search bar on top
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search by pole number or location...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onChanged: (value) {
                 setState(() {
-                  searchQuery = value.trim().toLowerCase();
+                  searchQuery = value.trim();
                 });
               },
             ),
@@ -134,118 +210,52 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('faults')
-                  .where('status', isEqualTo: 'fault')
+                  .collection('fault')
+                  .orderBy('timestamp', descending: true)
+                  .limit(1)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No active faults detected."));
+                  return Center(
+                    child: Text(searchQuery.isEmpty
+                        ? 'No fault data found.'
+                        : 'No results for your search.'),
+                  );
                 }
 
-                List<DocumentSnapshot> faultDocs = snapshot.data!.docs;
+                final doc = snapshot.data!.docs.first;
 
-                // Notify for new faults
-                for (var doc in faultDocs) {
-                  if (!_knownFaultIds.contains(doc.id)) {
-                    _knownFaultIds.add(doc.id);
-                    final pairName = doc['pairName'] ?? 'Unknown Pole';
-                    NotificationService.showFaultNotification(
-                      'New Fault Detected',
-                      'Fault detected at $pairName',
-                    );
-                  }
+                final pairName = doc.get('pairName').toString().toLowerCase();
+                final location = doc.get('location').toString().toLowerCase();
+                final electricityStatus = doc.get('electricityStatus') ?? 0;
+                final status = doc.get('status') ?? '';
+
+                final matchesSearch = searchQuery.isEmpty ||
+                    pairName.contains(searchQuery.toLowerCase()) ||
+                    location.contains(searchQuery.toLowerCase());
+
+                if (!matchesSearch) {
+                  return const Center(child: Text('No faults match your search.'));
                 }
 
-                // Apply search filter
-                if (searchQuery.isNotEmpty) {
-                  faultDocs = faultDocs.where((doc) {
-                    final pairName = (doc['pairName'] ?? '').toString().toLowerCase();
-                    final location = (doc['location'] ?? '').toString().toLowerCase();
-                    return pairName.contains(searchQuery) || location.contains(searchQuery);
-                  }).toList();
+                if (electricityStatus == 1 || status.toLowerCase() != 'fault') {
+                  return Center(
+                    child: Text(
+                      'No fault detected',
+                      style: TextStyle(fontSize: 20, color: Colors.green),
+                    ),
+                  );
                 }
 
-                // Sort faults by timestamp descending
-                faultDocs.sort((a, b) {
-                  final tsA = a['timestamp'];
-                  final tsB = b['timestamp'];
-                  if (tsA == null || tsB == null) return 0;
-                  return tsB.compareTo(tsA);
-                });
-
-                if (faultDocs.isEmpty) {
-                  return const Center(child: Text("No faults match your search."));
-                }
-
-                return ListView.builder(
-                  itemCount: faultDocs.length,
-                  itemBuilder: (context, index) {
-                    final fault = faultDocs[index];
-                    final pairName = fault['pairName'] ?? 'Unknown Pole';
-                    final location = fault['location'] ?? 'Unknown Location';
-                    final timestamp = fault['timestamp'];
-                    final latitude = fault['latitude'];
-                    final longitude = fault['longitude'];
-
-                    final formattedTime = timestamp != null
-                        ? DateFormat('yyyy-MM-dd HH:mm:ss')
-                        .format((timestamp as Timestamp).toDate().toLocal())
-                        : 'Unknown time';
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: ListTile(
-                        leading: const Icon(Icons.warning, color: Colors.red),
-                        title: Text(pairName),
-                        subtitle: Text(
-                          "Location: $location\nStatus: Detected\nTime: $formattedTime\nLatitude: $latitude\nLongitude: $longitude",
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.check, color: Colors.green),
-                          tooltip: 'Mark as Fixed',
-                          onPressed: () async {
-                            try {
-                              await FirebaseFirestore.instance
-                                  .collection('faults')
-                                  .doc(fault.id)
-                                  .update({'status': 'fixed'});
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Fault marked as fixed")),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Error updating fault: $e")),
-                              );
-                            }
-                          },
-                        ),
-                        onTap: () {
-                          if (latitude != null && longitude != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MapScreen(
-                                  latitude: latitude,
-                                  longitude: longitude,
-                                  pairName: pairName,
-                                ),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("No location data available.")),
-                            );
-                          }
-                        },
-                      ),
-                    );
-                  },
-                );
+                return _buildFaultCard(doc);
               },
             ),
           ),
@@ -258,13 +268,54 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => const FullMapScreen()),
           );
         },
-        label: const Text('View All Poles'),
-        icon: const Icon(Icons.location_pin),
-        backgroundColor: Colors.green,
+        label: const Text("View Map"),
+        icon: const Icon(Icons.map),
+      ),
+    );
+  }
+
+  Widget _buildFaultCard(DocumentSnapshot fault) {
+    final pairName = fault.get('pairName') ?? 'Unknown Pole';
+    final location = fault.get('location') ?? 'Unknown Location';
+    final timestamp = fault.get('timestamp');
+    final latitude = fault.get('latitude');
+    final longitude = fault.get('longitude');
+
+    final formattedTime = timestamp != null
+        ? DateFormat('yyyy-MM-dd HH:mm:ss')
+        .format((timestamp as Timestamp).toDate().toLocal())
+        : 'Unknown time';
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: ListTile(
+        leading: const Icon(Icons.warning, color: Colors.red),
+        title: Text(pairName),
+        subtitle: Text(
+          "Location: $location\nStatus: Fault Detected\nTime: $formattedTime",
+        ),
+        onTap: () {
+          try {
+            final lat = double.parse(latitude.toString());
+            final lng = double.parse(longitude.toString());
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MapScreen(
+                  latitude: lat,
+                  longitude: lng,
+                  pairName: pairName,
+                ),
+              ),
+            );
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Invalid location data.")),
+            );
+          }
+        },
       ),
     );
   }
 }
-
-// ------------------- HistoryPage: Show only fixed faults -------------------
-

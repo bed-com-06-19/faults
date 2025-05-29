@@ -9,7 +9,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // Logout functionality
   void _logout() async {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushReplacementNamed('/login');
@@ -26,22 +25,37 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 0,
       ),
       body: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        color: Colors.grey[100],
+        child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
-            _buildActionButton(
-              icon: Icons.lock,
-              label: "Change Password",
-              onPressed: () {
+            const Text(
+              "Account",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            _buildSettingsCard(
+              icon: Icons.lock_outline,
+              title: "Change Password",
+              subtitle: "Update your account password",
+              onTap: () {
                 // Navigate to Change Password Page
               },
             ),
-            const SizedBox(height: 12),
-            _buildActionButton(
+
+            const SizedBox(height: 10),
+
+            _buildSettingsCard(
               icon: Icons.logout,
-              label: "Log Out",
-              onPressed: _logout,
+              title: "Log Out",
+              subtitle: "Sign out of your account",
+              onTap: _logout,
+              iconColor: Colors.red,
             ),
           ],
         ),
@@ -49,24 +63,31 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // Helper method to build action buttons (Change Password, Log Out)
-  Widget _buildActionButton({
+  Widget _buildSettingsCard({
     required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color iconColor = Colors.green,
   }) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: Icon(icon, color: Colors.white),
-        label: Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green[700],
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: iconColor.withOpacity(0.1),
+          child: Icon(icon, color: iconColor),
         ),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(fontSize: 13, color: Colors.black54),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
     );
   }

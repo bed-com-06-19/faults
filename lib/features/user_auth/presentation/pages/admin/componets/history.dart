@@ -58,7 +58,7 @@ class _HistoryPageState extends State<HistoryPage> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('faults')
+                  .collection('fault')
                   .where('status', isEqualTo: 'fixed')
                   .snapshots(),
               builder: (context, snapshot) {
