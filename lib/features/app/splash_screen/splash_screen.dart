@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart'; // Ensure you import icons
+// Ensure you import icons
 
 class SplashScreen extends StatelessWidget {
   final Widget? child;

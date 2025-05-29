@@ -37,11 +37,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
     String? email,
     String? role,
   }) {
-    final TextEditingController _nameController = TextEditingController(text: name ?? '');
-    final TextEditingController _phoneController = TextEditingController(text: phone ?? '');
-    final TextEditingController _departmentController = TextEditingController(text: department ?? '');
-    final TextEditingController _ageController = TextEditingController(text: age ?? '');
-    final TextEditingController _emailController = TextEditingController(text: email ?? '');
+    final TextEditingController nameController = TextEditingController(text: name ?? '');
+    final TextEditingController phoneController = TextEditingController(text: phone ?? '');
+    final TextEditingController departmentController = TextEditingController(text: department ?? '');
+    final TextEditingController ageController = TextEditingController(text: age ?? '');
+    final TextEditingController emailController = TextEditingController(text: email ?? '');
     String selectedGender = gender ?? 'male';
     String selectedRole = role ?? 'user';
 
@@ -56,23 +56,23 @@ class _UserManagementPageState extends State<UserManagementPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  controller: _nameController,
+                  controller: nameController,
                   decoration: const InputDecoration(labelText: "Name"),
                 ),
                 TextField(
-                  controller: _emailController,
+                  controller: emailController,
                   decoration: const InputDecoration(labelText: "Email"),
                 ),
                 TextField(
-                  controller: _phoneController,
+                  controller: phoneController,
                   decoration: const InputDecoration(labelText: "Phone"),
                 ),
                 TextField(
-                  controller: _departmentController,
+                  controller: departmentController,
                   decoration: const InputDecoration(labelText: "Department"),
                 ),
                 TextField(
-                  controller: _ageController,
+                  controller: ageController,
                   decoration: const InputDecoration(labelText: "Age"),
                 ),
                 DropdownButtonFormField<String>(
@@ -101,22 +101,22 @@ class _UserManagementPageState extends State<UserManagementPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_emailController.text.isNotEmpty) {
+                if (emailController.text.isNotEmpty) {
                   try {
                     if (userId == null) {
                       // Create new user with a default password (123456)
                       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-                        email: _emailController.text,
+                        email: emailController.text,
                         password: "123456",
                       );
 
                       // Save user details to Firestore
                       await _firestore.collection('users').doc(userCredential.user!.uid).set({
-                        'name': _nameController.text,
-                        'email': _emailController.text,
-                        'phone': _phoneController.text,
-                        'department': _departmentController.text,
-                        'age': _ageController.text,
+                        'name': nameController.text,
+                        'email': emailController.text,
+                        'phone': phoneController.text,
+                        'department': departmentController.text,
+                        'age': ageController.text,
                         'gender': selectedGender,
                         'role': selectedRole,
                         'isFirstLogin': true,
@@ -129,11 +129,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     } else {
                       // Update existing user details
                       await _firestore.collection('users').doc(userId).update({
-                        'name': _nameController.text,
-                        'email': _emailController.text,
-                        'phone': _phoneController.text,
-                        'department': _departmentController.text,
-                        'age': _ageController.text,
+                        'name': nameController.text,
+                        'email': emailController.text,
+                        'phone': phoneController.text,
+                        'department': departmentController.text,
+                        'age': ageController.text,
                         'gender': selectedGender,
                         'role': selectedRole,
                       });

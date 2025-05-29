@@ -11,8 +11,8 @@ final ThemeData lightTheme = ThemeData(
     titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: MaterialStateProperty.all(Colors.green),
-    trackColor: MaterialStateProperty.all(Colors.greenAccent),
+    thumbColor: WidgetStateProperty.all(Colors.green),
+    trackColor: WidgetStateProperty.all(Colors.greenAccent),
   ),
 );
 
@@ -27,7 +27,7 @@ final ThemeData darkTheme = ThemeData(
     titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: MaterialStateProperty.all(Colors.green),
-    trackColor: MaterialStateProperty.all(Colors.greenAccent),
+    thumbColor: WidgetStateProperty.all(Colors.green),
+    trackColor: WidgetStateProperty.all(Colors.greenAccent),
   ),
 );

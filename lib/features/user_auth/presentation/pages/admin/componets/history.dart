@@ -12,7 +12,6 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  // Replace with your actual Channel ID and Read API Key
   static const String channelId = '2931876';
   static const String readApiKey = 'AZBAY4XTSCGO9FCH';
 
@@ -36,28 +35,35 @@ class _HistoryPageState extends State<HistoryPage> {
 
         if (feeds.isNotEmpty) {
           final latestFeed = feeds[0];
-          final field1 = latestFeed['field1'];
-          final createdAt = latestFeed['created_at'];
 
-          if (field1 != null && createdAt != null) {
-            final electricityStatus = int.tryParse(field1.toString()) ?? 0;
-            final timestamp = DateTime.parse(createdAt);
+          final field1 = int.tryParse(latestFeed['field1'] ?? '0') ?? 0;
+          final field2 = latestFeed['field2'] ?? 'Unknown';
+          final field3 = latestFeed['field3'] ?? '0.0';
+          final field4 = latestFeed['field4'] ?? '0.0';
+          final field5 = latestFeed['field5'] ?? 'Unknown';
+          final field6 = latestFeed['field6'] == 'true';
+          final field7 = latestFeed['field7'] ?? 'fault';
+          final field8 = latestFeed['field8'] ?? latestFeed['created_at'];
 
-            await FirebaseFirestore.instance.collection('fault').add({
-              'electricityStatus': electricityStatus,
-              'timestamp': timestamp,
-              'status': electricityStatus == 1 ? 'fixed' : 'fault',
-            });
+          final timestamp = DateTime.tryParse(field8) ?? DateTime.now();
 
-            print('✅ Data saved: $electricityStatus at $timestamp');
-          } else {
-            print('⚠️ Missing field1 or created_at in the feed.');
-          }
+          await FirebaseFirestore.instance.collection('fault').add({
+            'electricityStatus': field1,
+            'pairName': field2,
+            'latitude': field3,
+            'longitude': field4,
+            'location': field5,
+            'notified': field6,
+            'status': field7,
+            'timestamp': timestamp,
+          });
+
+          print('✅ Data saved to Firestore');
         } else {
           print('⚠️ No feeds available.');
         }
       } else {
-        print('❌ Failed to fetch data. Status code: ${response.statusCode}');
+        print('❌ Failed to fetch data: ${response.statusCode}');
       }
     } catch (e) {
       print('❌ Error fetching data: $e');
@@ -92,25 +98,40 @@ class _HistoryPageState extends State<HistoryPage> {
             itemBuilder: (context, index) {
               final doc = docs[index];
               final data = doc.data() as Map<String, dynamic>;
-              final electricityStatus = data['electricityStatus'] as int? ?? 0;
+
+              final electricityStatus = data['electricityStatus'] ?? 0;
+              final pairName = data['pairName'] ?? 'Unknown';
+              final location = data['location'] ?? 'Unknown';
+              final notified = data['notified'] ?? false;
+              final status = data['status'] ?? 'fault';
               final timestamp = (data['timestamp'] as Timestamp).toDate();
               final formattedTime =
                   DateFormat('yyyy-MM-dd HH:mm:ss').format(timestamp);
 
-              return ListTile(
-                leading: Icon(
-                  electricityStatus == 1
-                      ? Icons.check_circle
-                      : Icons.warning,
-                  color:
-                      electricityStatus == 1 ? Colors.green : Colors.red,
+              return Card(
+                child: ListTile(
+                  leading: Icon(
+                    electricityStatus == 1
+                        ? Icons.check_circle
+                        : Icons.warning_amber,
+                    color: electricityStatus == 1 ? Colors.green : Colors.red,
+                  ),
+                  title: Text(
+                    electricityStatus == 1
+                        ? 'Electricity Present'
+                        : 'Electricity Absent',
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Pole: $pairName'),
+                      Text('Location: $location'),
+                      Text('Notified: $notified'),
+                      Text('Status: $status'),
+                      Text('Time: $formattedTime'),
+                    ],
+                  ),
                 ),
-                title: Text(
-                  electricityStatus == 1
-                      ? 'Electricity Present'
-                      : 'Electricity Absent',
-                ),
-                subtitle: Text('Timestamp: $formattedTime'),
               );
             },
           );
