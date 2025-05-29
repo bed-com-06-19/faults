@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -14,11 +15,21 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   static const String channelId = '2931876';
   static const String readApiKey = 'AZBAY4XTSCGO9FCH';
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     fetchAndSaveThingSpeakData();
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      fetchAndSaveThingSpeakData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> fetchAndSaveThingSpeakData() async {
@@ -35,6 +46,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
         if (feeds.isNotEmpty) {
           final latestFeed = feeds[0];
+          final field8 = latestFeed['field8'] ?? latestFeed['created_at'];
+          final timestamp = DateTime.tryParse(field8) ?? DateTime.now();
 
           final field1 = int.tryParse(latestFeed['field1'] ?? '0') ?? 0;
           final field2 = latestFeed['field2'] ?? 'Unknown';
@@ -43,24 +56,38 @@ class _HistoryPageState extends State<HistoryPage> {
           final field5 = latestFeed['field5'] ?? 'Unknown';
           final field6 = latestFeed['field6'] == 'true';
           final field7 = latestFeed['field7'] ?? 'fault';
-          final field8 = latestFeed['field8'] ?? latestFeed['created_at'];
 
-          final timestamp = DateTime.tryParse(field8) ?? DateTime.now();
+          // Get the latest stored electricityStatus from Firestore
+          final lastDocQuery = await FirebaseFirestore.instance
+              .collection('fault')
+              .orderBy('timestamp', descending: true)
+              .limit(1)
+              .get();
 
-          await FirebaseFirestore.instance.collection('fault').add({
-            'electricityStatus': field1,
-            'pairName': field2,
-            'latitude': field3,
-            'longitude': field4,
-            'location': field5,
-            'notified': field6,
-            'status': field7,
-            'timestamp': timestamp,
-          });
+          int? lastElectricityStatus;
+          if (lastDocQuery.docs.isNotEmpty) {
+            final lastData = lastDocQuery.docs.first.data() as Map<String, dynamic>;
+            lastElectricityStatus = lastData['electricityStatus'] as int?;
+          }
 
-          print('✅ Data saved to Firestore');
+          // Write to Firestore only if electricityStatus changed
+          if (lastElectricityStatus == null || lastElectricityStatus != field1) {
+            await FirebaseFirestore.instance.collection('fault').add({
+              'electricityStatus': field1,
+              'pairName': field2,
+              'latitude': field3,
+              'longitude': field4,
+              'location': field5,
+              'notified': field6,
+              'status': field7,
+              'timestamp': timestamp,
+            });
+            print('✅ Electricity status changed. New data saved to Firestore.');
+          } else {
+            print('⏩ Electricity status unchanged. Skipping Firestore write.');
+          }
         } else {
-          print('⚠️ No feeds available.');
+          print('⚠️ No ThingSpeak feeds found.');
         }
       } else {
         print('❌ Failed to fetch data: ${response.statusCode}');
