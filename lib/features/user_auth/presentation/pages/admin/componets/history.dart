@@ -11,25 +11,10 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   String searchQuery = '';
-  DateTime? startDate;
-  DateTime? endDate;
-  String selectedLocation = 'All';
-
-  Future<List<QueryDocumentSnapshot>> _fetchFixedFaults() async {
-    Query query = FirebaseFirestore.instance
-        .collection('faults')
-        .where('status', isEqualTo: 'fixed');
-
-    QuerySnapshot snapshot = await query.get();
-    return snapshot.docs;
-  }
 
   void _resetFilters() {
     setState(() {
       searchQuery = '';
-      startDate = null;
-      endDate = null;
-      selectedLocation = 'All';
     });
   }
 
@@ -49,7 +34,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 Expanded(
                   child: TextField(
                     decoration: const InputDecoration(
-                      labelText: 'Search Pair Name',
+                      labelText: 'Search by Pole Number or Location',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.search),
                     ),
@@ -70,52 +55,6 @@ class _HistoryPageState extends State<HistoryPage> {
               ],
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: Text(startDate != null
-                      ? DateFormat('yyyy-MM-dd').format(startDate!)
-                      : "Start Date"),
-                  leading: const Icon(Icons.date_range),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now().subtract(const Duration(days: 30)),
-                      firstDate: DateTime(2023),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        startDate = picked;
-                      });
-                    }
-                  },
-                ),
-              ),
-              Expanded(
-                child: ListTile(
-                  title: Text(endDate != null
-                      ? DateFormat('yyyy-MM-dd').format(endDate!)
-                      : "End Date"),
-                  leading: const Icon(Icons.date_range),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2023),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        endDate = picked;
-                      });
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -123,21 +62,17 @@ class _HistoryPageState extends State<HistoryPage> {
                   .where('status', isEqualTo: 'fixed')
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
                 List<QueryDocumentSnapshot> faultDocs = snapshot.data!.docs;
 
-                // Apply filters
+                // Apply search filter (by pairName or location)
                 faultDocs = faultDocs.where((doc) {
                   final name = doc['pairName'].toString().toLowerCase();
                   final loc = doc['location'].toString().toLowerCase();
-                  final ts = doc['timestamp'];
-
-                  final matchesSearch = name.contains(searchQuery);
-                  final matchesDate = (startDate == null || ts.toDate().isAfter(startDate!)) &&
-                      (endDate == null || ts.toDate().isBefore(endDate!.add(const Duration(days: 1))));
-
-                  return matchesSearch && matchesDate;
+                  return name.contains(searchQuery) || loc.contains(searchQuery);
                 }).toList();
 
                 if (faultDocs.isEmpty) {

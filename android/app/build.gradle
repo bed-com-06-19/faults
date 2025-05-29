@@ -2,35 +2,40 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services"  // Ensure this is applied last
 }
 
 android {
     namespace = "com.example.faults"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8+
         coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
-        applicationId = "com.example.faults"
-        minSdk = 23
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        applicationId "com.example.faults"
+        minSdkVersion 23
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            // Use debug signing for testing (safe for local builds)
+            signingConfig signingConfigs.debug
+
+            // Disable shrinking and obfuscation
+            minifyEnabled false
+            shrinkResources false // 👈 Add this line to fix your issue
+
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
 }
@@ -41,4 +46,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-}
+    }
+
+apply plugin: "com.google.gms.google-services"
