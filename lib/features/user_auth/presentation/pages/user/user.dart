@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:faults/features/user_auth/presentation/pages/admin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -49,7 +50,7 @@ class _UserPageState extends State<UserPage> {
   Widget _buildUserHomePage() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('faults')
+          .collection('fault')
           .where('status', isEqualTo: 'fault')
           .snapshots(),
       builder: (context, snapshot) {
@@ -131,10 +132,11 @@ class _UserPageState extends State<UserPage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      _buildUserHomePage(),
+      const HomePage(),
       const HistoryPage(),
       const SettingsPage(),
     ];
+
 
     return Scaffold(
       appBar: AppBar(
